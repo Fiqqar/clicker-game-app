@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const max = 999;
 const score = ref(0);
@@ -47,16 +47,40 @@ const level = ref(0);
 const level2 = ref(0);
 const animatedScore = ref(false);
 
-const currentImage = ref('./assets/buttonatas.png')
+const loadProgress = () => {
+  const savedProgress = localStorage.getItem('userProgress');
+  if (savedProgress) {
+    const userProgress = JSON.parse(savedProgress);
+    score.value = userProgress.score || 0;
+    level.value = userProgress.level || 0;
+    level2.value = userProgress.level2 || 0;
+    scorePC.value = userProgress.scorePC || 1;
+    upgradeCost.value = userProgress.upgradeCost || 10;
+    upgradeHarga.value = userProgress.upgradeHarga || 100;
+  }
+};
+
+// Menyimpan progres setiap kali skor berubah
+const saveProgress = () => {
+  const userProgress = {
+    score: score.value,
+    level: level.value,
+    level2: level2.value,
+    scorePC: scorePC.value,
+    upgradeCost: upgradeCost.value,
+    upgradeHarga: upgradeHarga.value,
+  };
+  localStorage.setItem('userProgress', JSON.stringify(userProgress));
+};
 
 const scoreTambah = () => {
   score.value += scorePC.value;
-  updateTitle()
+  updateTitle();
   animatedScore.value = true;
   setTimeout(() => {
     animatedScore.value = false;
   }, 100);
-};
+  saveProgress();
 
 const upgradeLaptop = () => {
   if (level.value >= max) {
@@ -69,6 +93,7 @@ const upgradeLaptop = () => {
     scorePC.value += 1;                
     upgradeCost.value = Math.ceil(upgradeCost.value * 1.1);
     level.value += 1;    
+    saveProgress();
   } else {
     alert('Score tidak cukup! tambah lagi score mu.');
   }
@@ -85,6 +110,7 @@ const upgradePC = () => {
     scorePC.value += 2;                
     upgradeHarga.value = Math.ceil(upgradeHarga.value * 1.1);
     level2.value += 1;    
+    saveProgress();
   } else {
     alert('Score tidak cukup! tambah lagi score mu.');
   }
@@ -97,8 +123,12 @@ const showAlert = () => {
 const updateTitle = () => {
   setTimeout(() => {
     document.title = `${Math.floor(score.value)} Score - Button Clicker` 
-  }, 2500)
-}
+  }, 2500);
+};
+
+onMounted(() => {
+  loadProgress();
+});
 </script>
 
 <style scoped>
