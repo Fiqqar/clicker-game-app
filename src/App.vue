@@ -47,21 +47,39 @@ const level = ref(0);
 const level2 = ref(0);
 const animatedScore = ref(false);
 
+const dbRequest = indexedDB.open('ButtonClickerDB', 1);
+
+dbRequest.onupgradeneeded = (event) => {
+  const db = event.target.result;
+  db.createObjectStore('progress', { keyPath: 'id' });
+};
+
 const loadProgress = () => {
-  const savedProgress = localStorage.getItem('userProgress');
-  if (savedProgress) {
-    const userProgress = JSON.parse(savedProgress);
-    score.value = userProgress.score || 0;
-    level.value = userProgress.level || 0;
-    level2.value = userProgress.level2 || 0;
-    scorePC.value = userProgress.scorePC || 1;
-    upgradeCost.value = userProgress.upgradeCost || 10;
-    upgradeHarga.value = userProgress.upgradeHarga || 100;
-  }
+  const dbRequest = indexedDB.open('ButtonClickerDB', 1);
+  
+  dbRequest.onsuccess = (event) => {
+    const db = event.target.result;
+    const transaction = db.transaction('progress', 'readonly');
+    const store = transaction.objectStore('progress');
+    const getRequest = store.get(1);
+    
+    getRequest.onsuccess = () => {
+      const userProgress = getRequest.result;
+      if (userProgress) {
+        score.value = userProgress.score || 0;
+        level.value = userProgress.level || 0;
+        level2.value = userProgress.level2 || 0;
+        scorePC.value = userProgress.scorePC || 1;
+        upgradeCost.value = userProgress.upgradeCost || 10;
+        upgradeHarga.value = userProgress.upgradeHarga || 100;
+      }
+    };
+  };
 };
 
 const saveProgress = () => {
   const userProgress = {
+    id: 1,
     score: score.value,
     level: level.value,
     level2: level2.value,
@@ -69,7 +87,15 @@ const saveProgress = () => {
     upgradeCost: upgradeCost.value,
     upgradeHarga: upgradeHarga.value,
   };
-  localStorage.setItem('userProgress', JSON.stringify(userProgress));
+  
+  const dbRequest = indexedDB.open('ButtonClickerDB', 1);
+  
+  dbRequest.onsuccess = (event) => {
+    const db = event.target.result;
+    const transaction = db.transaction('progress', 'readwrite');
+    const store = transaction.objectStore('progress');
+    store.put(userProgress);
+  };
 };
 
 const scoreTambah = () => {
