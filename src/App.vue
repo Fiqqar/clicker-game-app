@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
 
 const max = 999;
 const score = ref(0);
@@ -60,7 +60,6 @@ const loadProgress = () => {
   }
 };
 
-// Menyimpan progres setiap kali skor berubah
 const saveProgress = () => {
   const userProgress = {
     score: score.value,
@@ -81,6 +80,7 @@ const scoreTambah = () => {
     animatedScore.value = false;
   }, 100);
   saveProgress();
+};
 
 const upgradeLaptop = () => {
   if (level.value >= max) {
@@ -122,7 +122,7 @@ const showAlert = () => {
 
 const updateTitle = () => {
   setTimeout(() => {
-    document.title = `${Math.floor(score.value)} Score - Button Clicker` 
+    document.title = `${Math.floor(score.value)} Score - Button Clicker`; 
   }, 2500);
 };
 
